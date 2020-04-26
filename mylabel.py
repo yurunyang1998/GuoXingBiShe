@@ -13,7 +13,8 @@ class MyLabel(QLabel):
     y1 = 0
     flag = False
     #鼠标点击事件
-
+    moved = False
+    #鼠标移动
     def clear(self):
         self.Rois.clear()
 
@@ -27,11 +28,14 @@ class MyLabel(QLabel):
     #鼠标释放事件
     def mouseReleaseEvent(self,event):
         self.flag = False
-        self.Rois.append(self.rect)   #释放鼠标时将roi添加进列表
-        self.func()
+        if(self.moved):
+            self.Rois.append(self.rect)   #释放鼠标时将roi添加进列表
+            self.func()
+            self.moved = False
 
     #鼠标移动事件
     def mouseMoveEvent(self,event):
+        self.moved = True
         if self.flag:
             self.x1 = event.x()
             self.y1 = event.y()
@@ -40,13 +44,14 @@ class MyLabel(QLabel):
     def paintEvent(self, event):
         super().paintEvent(event)  #调用的父类label的paintEvent？？
         self.rect =QRect(self.x0, self.y0, abs(self.x1-self.x0), abs(self.y1-self.y0))
+        # self.rect.height()
         painter = QPainter(self)
         painter.setPen(QPen(Qt.green,1,Qt.SolidLine))
         painter.drawRect(self.rect)
 
         for roi in self.Rois:           #重新绘制之前添加的roi
-            print(roi)
-            painter.drawRect(roi)
+            # print(roi.x(),roi.y(),roi.width()+roi.x(),roi.height()+roi.y())
+            painter.drawRect(roi[0])
 
         pqscreen = QApplication.primaryScreen()  # 保存截图
         # pixmap2 = pqscreen.grabWindow(self.winId(), self.x0, self.y0, abs(self.x1 - self.x0), abs(self.y1 - self.y0))

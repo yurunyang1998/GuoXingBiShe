@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import  os
 from mainUI import Ui_MainWindow
 from mylabel import MyLabel
-
+import XMLP
 
 def listdir(path, list_name): #传入存储的list
     for file in os.listdir(path):
@@ -24,26 +24,81 @@ class MyPyQT_Form(QtWidgets.QMainWindow,Ui_MainWindow):
         super(MyPyQT_Form,self).__init__()
         self.setupUi(self)
         self.actionreadfile.triggered.connect(self.actionreadfile_click)
+
+        self.pushButton_2.clicked.connect(self.setSavePath)
+        self.pushButton.clicked.connect(self.saveXML)
+        self.pushButton_3.clicked.connect(self.addLabels)
+
         self.lb = MyLabel(self)
-        self.lb.setGeometry(QtCore.QRect(290,40,681,631))
+        # self.lb.setGeometry(QtCore.QRect(290,40,681,631))
+        self.verticalLayout.addWidget(self.lb)
+
         self.lb.addFunc(self.addRoiListitem)
         self.listWidget.itemSelectionChanged.connect(self.getListitems)
+        self.xmlSavePath = "./xmlfiles"
+        self.XMLP = XMLP.XMLP("./xmltemplete.xml", "./objxmltemplete.xml")
+
+        self.class_ = self.comboBox.currentText()
+        self.comboBox.currentIndexChanged.connect(self.labelchanged)
 
     def getListitems(self):
         item = self.listWidget.currentItem()
 
-        print(item.text())
+        # print(item.text())
         self.showSelectedPic(item.text())
 
+    def labelchanged(self):
+        self.class_ = self.comboBox.currentText()
+
+
     def addRoiListitem(self):
-        self.roilistwidget.addItem(str(self.lb.Rois[-1]))
+        roi = self.lb.Rois.pop()
+        self.roilistwidget.addItem(str(roi))
+        self.lb.Rois.append([roi,self.class_])
+
+    def addLabels(self):
+        labels = self.textEdit.toPlainText()
+        for i in labels.splitlines():
+            self.comboBox.addItem(i)
+
+
+    def setSavePath(self):
+        self.xmlSavePath =  QFileDialog.getExistingDirectory(self, '设置xml文件保存路径','./')
+        if(self.xmlSavePath==""):
+            self.xmlSavePath = "./xmlfiles"
+
+    def saveXML(self):
+
+        filename = self.listWidget.currentItem().text()
+        filename = os.path.split(filename)[-1]
+        self.XMLP.setfilename(filename)
+        # self.XMLP.setSize(self.lb.size()[0],self.lb.size()[1])
+        for roi in self.lb.Rois:
+            print(roi[0].x(),roi[0].y(),roi[0].width()+roi[0].x(),roi[0].height()+roi[0].y())
+            # print(self.class_)
+            self.XMLP.insert(roi[1], int(roi[0].x()/self.widthscale) ,int(roi[0].y()/self.heightscale),int(roi[0].width()+roi[0].x()/self.widthscale), int(roi[0].height()+roi[0].y()/self.heightscale))
+        if(not os.path.exists(self.xmlSavePath)):
+            os.mkdir(self.xmlSavePath)
+        self.XMLP.write(os.path.join(self.xmlSavePath,filename.split('.')[0]+".xml"))
 
 
     def showSelectedPic(self,picname):
         print(picname)
         self.lb.clear()
         self.roilistwidget.clear()
-        self.lb.setPixmap(QPixmap(picname))  #标签
+        pic = QPixmap(picname)
+        realwidth = pic.width()
+        realheight = pic.height()
+
+
+        self.lb.setPixmap(pic)  #标签
+        showwidth = self.lb.width()
+        showheight = self.lb.height()
+
+        self.widthscale = showwidth/realwidth
+        self.heightscale = showheight/realheight
+
+
         self.lb.setScaledContents(True)
 
 

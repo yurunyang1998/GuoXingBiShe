@@ -17,7 +17,7 @@ class XMLP:
 
     def setfilename(self,filename):
         node = self.DOMTree.documentElement.getElementsByTagName("filename")
-        node[0].firstChild.data = "hahaha"
+        node[0].firstChild.data = filename
 
     def setSize(self, width, height):
         node = self.DOMTree.documentElement.getElementsByTagName("width")
@@ -28,6 +28,7 @@ class XMLP:
     def insert(self,name, xmin,ymin, xmax, ymax):
 
         tempnode = self.objTree.cloneNode(deep=True)
+        # self.tempDOM = self.DOMTree.cloneNode(deep=True)
 
         node = tempnode.documentElement.getElementsByTagName("name")
         node[0].firstChild.data = name
@@ -49,12 +50,16 @@ class XMLP:
 
 
 
-        print(self.DOMTree.toxml())
+        # print(s.toxml())
 
     def write(self,filename):
-        with open(filename,"w") as f:
-            self.DOMTree.writexml(f)
-            f.close()
+        try:
+            with open(filename,"w") as f:
+                self.DOMTree.writexml(f)
+                f.close()
+                self.DOMTree = xml.dom.minidom.parse(self.xmltemplete)
+        except Exception as e:
+            print(e)
 
 if __name__ == '__main__':
     xmlp = XMLP("./xmltemplete.xml","objxmltemplete.xml")
@@ -63,4 +68,7 @@ if __name__ == '__main__':
 
     xmlp.insert("haha",10,100,10,100)
     xmlp.insert("hasdfha",10,3,32,43)
+    xmlp.write("test.xml")
+    xmlp.insert("haha", 10, 100, 10, 100)
+    # xmlp.insert("hasdfha", 10, 3, 32, 43)
     xmlp.write("test.xml")
