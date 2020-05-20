@@ -40,6 +40,17 @@ class MyPyQT_Form(QtWidgets.QMainWindow,Ui_MainWindow):
 
         self.class_ = self.comboBox.currentText()
         self.comboBox.currentIndexChanged.connect(self.labelchanged)
+        self.pushButton_4.clicked.connect(self.autoDectection)
+
+
+    def autoDectection(self):
+        if(self.lb.autodec == True):
+            self.lb.autodec = False
+        else:
+            self.lb.autodec = True
+
+
+
 
     def getListitems(self):
         item = self.listWidget.currentItem()
